@@ -1,4 +1,4 @@
-# Group-3-Purchasing-System
+# Group-03-Purchasing-System
 
 Group Leader: Muhammad Syahmi bin Baharin (1161202337) - itssyem
 
