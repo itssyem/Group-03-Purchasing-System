@@ -17,6 +17,7 @@
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                     <span class="icon-bar"></span>
+                    {% if user.is_authenticated %}<span class="icon-bar"></span>{% endif %}
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
@@ -25,6 +26,7 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a href="{% url 'home' %}">Home</a></li>
+                    {% if user.is_authenticated %}<li><a href="{% url 'menu' %}">Menu</a></li>{% endif %}
                     <li><a href="{% url 'about' %}">About</a></li>
                     <li><a href="{% url 'contact' %}">Contact</a></li>
                 </ul>
