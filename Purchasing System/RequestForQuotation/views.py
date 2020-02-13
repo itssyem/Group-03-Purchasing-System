@@ -21,6 +21,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 import random
 import datetime 
+import decimal
 from django.db import IntegrityError
 
 from django.http import Http404
@@ -69,82 +70,97 @@ def fillingrequestforquotation(request):
         return render(request,'RequestForQuotation/requestforquotationform.html',context)
 
 def requestforquotationconfirmation(request):
-
-    context = {}
-    rfq_id = request.POST['request_for_quotation_id']
-    purchase_requisition_id = request.POST['purchase_requisition_id']
-    staff_id = request.user.id
-    vendor_id = request.POST['vendor_id']
-    description = request.POST['description']
-    staff_info = Person.objects.get(user_id = staff_id)
-    responses = request.read()
-    print(responses)
-   
-    q= QueryDict(responses)
     
-    items_id = q.getlist('item_id')
-    print(items_id)
-    items_name = q.getlist('item_name')
-    print(items_name)
-    items_quantity = q.getlist('quantity')
-    print(items_quantity)
-    items_unit_price = q.getlist('unit_price')
-    print(items_unit_price)
-    items_total_price = q.getlist('total_price')
-    print(items_total_price)
-
-
-    items = list()
-
-    i = 0
-    items_length = len(items_id)
-    grand_total = Decimal(0)
-
-    while i < items_length:
-        total= Decimal(items_quantity[i]) * Decimal(items_unit_price[i])
-        item_table = {
-            'item_name': items_name[i],
-            'item_id': items_id[i],
-            'quantity' : items_quantity[i],
-            'unit_price': items_unit_price[i],
-            'total_price': total
-        }
-        items.append(item_table)
-        i = i + 1
-        grand_total = grand_total + total
-    print(items)
-
     try:
-        vendor_info = Vendor.objects.get(vendor_id = vendor_id)
+        context = {}
+        rfq_id = request.POST['request_for_quotation_id']
+        purchase_requisition_id = request.POST['purchase_requisition_id']
+        staff_id = request.user.id
+        vendor_id = request.POST['vendor_id']
+        description = request.POST['description']
+        staff_info = Person.objects.get(user_id = staff_id)
+        responses = request.read()
+        print(responses)
+   
+        q= QueryDict(responses)
+    
+        items_id = q.getlist('item_id')
+        print(items_id)
+        items_name = q.getlist('item_name')
+        print(items_name)
+        items_quantity = q.getlist('quantity')
+        print(items_quantity)
+        items_unit_price = q.getlist('unit_price')
+        print(items_unit_price)
+        items_total_price = q.getlist('total_price')
+        print(items_total_price)
 
 
-        context = {
-                'title': 'Request For Quotation Confirmation',
-                'purchase_requisition_id' : purchase_requisition_id,
-                'request_for_quotation_id' : rfq_id,
-                'staff_id' : staff_id,
-                'vendor_id' : vendor_id,
-                'grand_total': grand_total,
-                'rows' : items,
-                'staff_info' : staff_info,
-                'vendor_info' : vendor_info,
-                'description' : description
+        items = list()
+
+        i = 0
+        items_length = len(items_id)
+        grand_total = Decimal(0)
+
+        while i < items_length:
+            total= Decimal(items_quantity[i]) * Decimal(items_unit_price[i])
+            item_table = {
+                'item_name': items_name[i],
+                'item_id': items_id[i],
+                'quantity' : items_quantity[i],
+                'unit_price': items_unit_price[i],
+                'total_price': total
             }
+            items.append(item_table)
+            i = i + 1
+            grand_total = grand_total + total
+        print(items)
+
+        try:
+            vendor_info = Vendor.objects.get(vendor_id = vendor_id)
 
 
-        return render(request,'RequestForQuotation/requestforquotationconfirmation.html',context)
-    except Vendor.DoesNotExist:
-        context = { 'error': 'Please insert valid vendor ID!',
-                    'title': 'Request Of Quotation Form',
+            context = {
+                    'title': 'Request For Quotation Confirmation',
                     'purchase_requisition_id' : purchase_requisition_id,
                     'request_for_quotation_id' : rfq_id,
                     'staff_id' : staff_id,
+                    'vendor_id' : vendor_id,
                     'grand_total': grand_total,
                     'rows' : items,
                     'staff_info' : staff_info,
+                    'vendor_info' : vendor_info,
                     'description' : description
-            }
+                }
+
+
+            return render(request,'RequestForQuotation/requestforquotationconfirmation.html',context)
+        except Vendor.DoesNotExist:
+            context = { 'error': 'Please insert valid vendor ID!',
+                        'title': 'Request Of Quotation Form',
+                        'purchase_requisition_id' : purchase_requisition_id,
+                        'request_for_quotation_id' : rfq_id,
+                        'staff_id' : staff_id,
+                        'grand_total': grand_total,
+                        'rows' : items,
+                        'staff_info' : staff_info,
+                        'description' : description
+                }
+            return render(request,'RequestForQuotation/requestforquotationform.html',context)
+
+    except decimal.InvalidOperation:
+        context = { 'error': 'Please enter valid quantity value !',
+                        'title': 'Request Of Quotation Form',
+                        'purchase_requisition_id' : purchase_requisition_id,
+                        'request_for_quotation_id' : rfq_id,
+                        'staff_id' : staff_id,
+                        'grand_total': grand_total,
+                        'rows' : items,
+                        'staff_info' : staff_info,
+                        'description' : description
+                }
         return render(request,'RequestForQuotation/requestforquotationform.html',context)
+    
 
  
 def requestforquotationdetails(request):

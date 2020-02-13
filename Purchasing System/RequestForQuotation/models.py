@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from decimal import Decimal
 from django.contrib.auth.models import User
@@ -19,7 +20,7 @@ class RequestForQuotation(models.Model):
 class RequestForQuotationItem(models.Model):
     request_for_quotation_id = models.ForeignKey(RequestForQuotation, on_delete = models.CASCADE)
     item_id = models.ForeignKey(Item, on_delete = models.CASCADE)
-    quantity = models.IntegerField()
+    quantity = models.IntegerField(default=1, validators=[MaxValueValidator(100), MinValueValidator(1)])
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     ref_id = models.CharField(max_length=20,null=True,default=None, blank=True )
