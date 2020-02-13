@@ -19,6 +19,7 @@ from django.http.request import QueryDict
 from decimal import Decimal
 import random
 import datetime 
+import decimal
 
 
 @login_required
@@ -42,61 +43,76 @@ def purchaserequisitionform(request):
 
 
 def purchaserequisitionconfirmation(request):
+    
+    try:
+        context = {}
+        pr_id = request.POST['purchase_requisition_id']
+        person_id= request.POST['person_id']
 
-    context = {}
-    pr_id = request.POST['purchase_requisition_id']
-    person_id= request.POST['person_id']
+        responses = request.read()
+        print(responses)
 
-    responses = request.read()
-    print(responses)
+        q = QueryDict(responses)
 
-    q = QueryDict(responses)
+        items_id = q.getlist('item_id')
+        print(items_id)
+        items_name = q.getlist('item_name')
+        print(items_name)
+        description = q.getlist('description')
+        print(items_name)
+        quantity = q.getlist('quantity')
+        print(quantity)
+        unit_price = q.getlist('unit_price')
+        print(unit_price)
+        total_price = q.getlist('total_price')
+        print(total_price)
 
-    items_id = q.getlist('item_id')
-    print(items_id)
-    items_name = q.getlist('item_name')
-    print(items_name)
-    description = q.getlist('description')
-    print(items_name)
-    quantity = q.getlist('quantity')
-    print(quantity)
-    unit_price = q.getlist('unit_price')
-    print(unit_price)
-    total_price = q.getlist('total_price')
-    print(total_price)
+        items = list()
 
-    items = list()
+        i = 0
+        items_length = len(items_id)
+        grand_total = Decimal(0)
 
-    i = 0
-    items_length = len(items_id)
-    grand_total = Decimal(0)
+        while i < items_length:
+            total= Decimal(quantity[i]) * Decimal(unit_price[i])
+            item_table = {
+                'item_name': items_name[i],
+                'item_id': items_id[i],
+                'quantity' : quantity[i],
+                'description': description[i],
+                'unit_price': unit_price[i],
+                'total_price': total
+            }
+            items.append(item_table)
+            i = i + 1
+            grand_total = grand_total + total
+        print(items)
 
-    while i < items_length:
-        total= Decimal(quantity[i]) * Decimal(unit_price[i])
-        item_table = {
-            'item_name': items_name[i],
-            'item_id': items_id[i],
-            'quantity' : quantity[i],
-            'description': description[i],
-            'unit_price': unit_price[i],
-            'total_price': total
-        }
-        items.append(item_table)
-        i = i + 1
-        grand_total = grand_total + total
-    print(items)
-
-    context = {
-            'title': 'Purchase Requisition Confirmation',
-            'purchase_requisition_id' : pr_id,
-            'person_id' : person_id,
-            'grand_total': grand_total,
-            'rows' : items,
+        context = {
+                'title': 'Purchase Requisition Confirmation',
+                'purchase_requisition_id' : pr_id,
+                'person_id' : person_id,
+                'grand_total': grand_total,
+                'rows' : items,
   
-        }
+            }
 
-    return render(request,'PurchaseRequisition/purchaserequisitionconfirmation.html',context)
+        return render(request,'PurchaseRequisition/purchaserequisitionconfirmation.html',context)
+    except decimal.InvalidOperation:
+        pr_id = random.randint(10000000,99999999)
+        user_id = request.user.id
+        person = Person.objects.get(user_id = user_id)
 
+        context = {
+                'title':'Purchase Requisition Form',
+                'person_id': person.person_id,
+                'purchase_requisition_id':'PR' + str(pr_id),
+                'error': 'Please enter valid quantity value !'
+            }
+        context['user'] = request.user
+
+ 
+        return render(request,'PurchaseRequisition/purchaserequisitionform.html',context)
  
 
    

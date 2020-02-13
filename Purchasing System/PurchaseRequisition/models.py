@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from decimal import Decimal
 from django.contrib.auth.models import User
@@ -22,7 +23,7 @@ class PurchaseRequisitionItem(models.Model):
     pr_id= models.ForeignKey(PurchaseRequisition)#takes character
     item_id= models.ForeignKey(Item)#takes character
     unit_price= models.DecimalField(max_digits= 10, decimal_places=2)
-    quantity= models.IntegerField()
+    quantity= models.IntegerField(default=1, validators=[MaxValueValidator(100), MinValueValidator(1)])
     ref_id = models.CharField(max_length=20,null=True,default=None, blank=True )
 
 
